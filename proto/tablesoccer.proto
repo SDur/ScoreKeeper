@@ -1,0 +1,18 @@
+syntax = "proto3";
+package tablesoccer;
+
+message MatchResult {
+    message Team {
+        repeated Person persons = 1;
+        int32 score = 2;
+    }
+
+    repeated Team teams = 1;
+}
+
+message Person {
+    string firstname = 1;
+    string lastname = 2;
+    int32 wins = 3;
+}
+
