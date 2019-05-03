@@ -16,3 +16,11 @@ message Person {
     int32 wins = 3;
 }
 
+message Empty {
+
+}
+
+service ScoreKeeperService {
+    rpc StoreScore (MatchResult) returns (Empty);
+    rpc GetScore (Person) returns (Person);
+}
