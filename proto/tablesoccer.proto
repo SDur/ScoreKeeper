@@ -1,6 +1,8 @@
 syntax = "proto3";
 package tablesoccer;
 
+//import "google/protobuf/timestamp.proto";
+
 message MatchResult {
     message Team {
         repeated Person persons = 1;
