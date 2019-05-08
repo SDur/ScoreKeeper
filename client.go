@@ -2,8 +2,11 @@ package score_keeper
 
 import (
 	"context"
+	"github.com/SDur/score-keeper/pb"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"log"
+	"time"
+
 	// "google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc"
 )
@@ -50,18 +53,55 @@ func runClient(servers []string) {
 	go printStateChange(conn, "conn")
 
 	//client := pb.NewEchoClient(conn)
-	//log.Printf("---")
-	//for input := ""; ; input = "" {
-	//	input = fmt.Sprint(time.Now().Second())
-	//	got, err := client.Hi(context.Background(), &pb.Msg{Msg: input})
-	//	if err != nil {
-	//		log.Printf("error: %s", err)
-	//		time.Sleep(time.Second * 5)
-	//		continue
-	//	}
-	//	log.Printf("send: %s", got.GetMsg())
-	//	time.Sleep(time.Second)
-	//}
+	client := pb.NewScoreKeeperServiceClient(conn)
+	log.Printf("---")
+	_, err = client.StoreScore(context.Background(), getMatchResult())
+	if err != nil {
+		log.Printf("error: %s", err)
+		time.Sleep(time.Second * 5)
+	}
+	time.Sleep(time.Second)
+	p1 := pb.Person{
+		Firstname: "Kaas",
+		Lastname:  "Kop",
+	}
+	person, err := client.GetScore(context.Background(), &p1)
+	if err != nil {
+		log.Printf("error: %s", err)
+		time.Sleep(time.Second * 5)
+	}
+	log.Printf("Received score: %s, for player: %s", person.GetWins(), person)
+}
+
+func getMatchResult() *pb.MatchResult {
+	p1 := pb.Person{
+		Firstname: "Kaas",
+		Lastname:  "Kop",
+	}
+	p2 := pb.Person{
+		Firstname: "Stom",
+		Lastname:  "Kop",
+	}
+	p3 := pb.Person{
+		Firstname: "Dom",
+		Lastname:  "Kop",
+	}
+	p4 := pb.Person{
+		Firstname: "Pannenkoek",
+		Lastname:  "Kop",
+	}
+	t1 := pb.MatchResult_Team{
+		Persons: []*pb.Person{&p1, &p2},
+		Score:   5,
+	}
+	t2 := pb.MatchResult_Team{
+		Persons: []*pb.Person{&p3, &p4},
+		Score:   10,
+	}
+	r := pb.MatchResult{
+		Teams: []*pb.MatchResult_Team{&t1, &t2},
+	}
+	return &r
 }
 
 func printStateChange(conn *grpc.ClientConn, name string) {
