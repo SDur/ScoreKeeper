@@ -62,7 +62,7 @@ func runClient(servers []string) {
 	}
 	time.Sleep(time.Second)
 	p1 := pb.Person{
-		Firstname: "Kaas",
+		Firstname: "Dom",
 		Lastname:  "Kop",
 	}
 	person, err := client.GetScore(context.Background(), &p1)

@@ -21,12 +21,12 @@ func (*service) StoreScore(ctx context.Context, req *pb.MatchResult) (*pb.Empty,
 
 	if t1.Score > t2.Score {
 		log.Println("Team 1 has won")
-		cache[t1.Persons[0]] = cache[t1.Persons[0]] + 1
-		cache[t1.Persons[1]] = cache[t1.Persons[1]] + 1
+		cache[t1.Persons[0].Firstname] = cache[t1.Persons[0].Firstname] + 1
+		cache[t1.Persons[1].Firstname] = cache[t1.Persons[1].Firstname] + 1
 	} else {
 		log.Println("Team 2 has won")
-		cache[t2.Persons[0]] = cache[t2.Persons[0]] + 1
-		cache[t2.Persons[1]] = cache[t2.Persons[1]] + 1
+		cache[t2.Persons[0].Firstname] = cache[t2.Persons[0].Firstname] + 1
+		cache[t2.Persons[1].Firstname] = cache[t2.Persons[1].Firstname] + 1
 	}
 	return new(pb.Empty), nil
 }
@@ -38,7 +38,7 @@ func (*service) GetScore(ctx context.Context, req *pb.Person) (*pb.Person, error
 		Lastname:  "Choco",
 		Wins:      3,
 	}
-	result, ok := cache[req]
+	result, ok := cache[req.Firstname]
 	if !ok {
 		return &p, nil
 	}
@@ -47,7 +47,7 @@ func (*service) GetScore(ctx context.Context, req *pb.Person) (*pb.Person, error
 	return req, nil
 }
 
-var cache = make(map[*pb.Person]int32)
+var cache = make(map[string]int32)
 
 func runServer(port string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
