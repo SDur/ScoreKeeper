@@ -1,9 +1,13 @@
 package score_keeper
 
 import (
+	"context"
 	"fmt"
+	"github.com/SDur/score-keeper/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"time"
@@ -11,6 +15,22 @@ import (
 
 type server struct {
 	port string
+}
+
+type service struct {
+}
+
+func (*service) StoreScore(ctx context.Context, req *pb.MatchResult) (*pb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreScore not implemented")
+}
+
+func (*service) GetScore(ctx context.Context, req *pb.Person) (*pb.Person, error) {
+	p := pb.Person{
+		Firstname: "Sjaak",
+		Lastname:  "Choco",
+		Wins:      3,
+	}
+	return &p, nil
 }
 
 func runServer(port string) {
@@ -31,7 +51,9 @@ func runServer(port string) {
 			}),
 		grpc.MaxConcurrentStreams(5),
 	)
-	//pb.RegisterEchoServer(s, &server{port})
+
+	pb.RegisterScoreKeeperServiceServer(s, new(service))
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
