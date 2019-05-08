@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"github.com/SDur/score-keeper/pb"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
-	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"time"
 )
 
-type server struct {
-	port string
-}
-
 type service struct {
 }
 
 func (*service) StoreScore(ctx context.Context, req *pb.MatchResult) (*pb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreScore not implemented")
+	p := pb.Person{
+		Firstname: "Sjaak",
+		Lastname:  "Choco",
+		Wins:      3,
+	}
+	cache[p] = cache[p] + p.Wins
+	return new(pb.Empty), nil
 }
 
 func (*service) GetScore(ctx context.Context, req *pb.Person) (*pb.Person, error) {
@@ -30,8 +30,15 @@ func (*service) GetScore(ctx context.Context, req *pb.Person) (*pb.Person, error
 		Lastname:  "Choco",
 		Wins:      3,
 	}
-	return &p, nil
+	result, ok := cache[*req]
+	if !ok {
+		return &p, nil
+	}
+	req.Wins = result
+	return req, nil
 }
+
+var cache = make(map[pb.Person]int32)
 
 func runServer(port string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
