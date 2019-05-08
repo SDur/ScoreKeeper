@@ -1,7 +1,12 @@
 syntax = "proto3";
-package tablesoccer;
+option go_package = "pb";
 
 //import "google/protobuf/timestamp.proto";
+
+service ScoreKeeperService {
+    rpc StoreScore (MatchResult) returns (Empty);
+    rpc GetScore (Person) returns (Person);
+}
 
 message MatchResult {
     message Team {
@@ -20,9 +25,4 @@ message Person {
 
 message Empty {
 
-}
-
-service ScoreKeeperService {
-    rpc StoreScore (MatchResult) returns (Empty);
-    rpc GetScore (Person) returns (Person);
 }
