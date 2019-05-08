@@ -15,12 +15,16 @@ type service struct {
 }
 
 func (*service) StoreScore(ctx context.Context, req *pb.MatchResult) (*pb.Empty, error) {
-	p := pb.Person{
-		Firstname: "Sjaak",
-		Lastname:  "Choco",
-		Wins:      3,
+	t1 := req.Teams[0]
+	t2 := req.Teams[1]
+
+	if t1.Score > t2.Score {
+		cache[t1.Persons[0]] = cache[t1.Persons[0]] + 1
+		cache[t1.Persons[1]] = cache[t1.Persons[1]] + 1
+	} else {
+		cache[t2.Persons[0]] = cache[t2.Persons[0]] + 1
+		cache[t2.Persons[1]] = cache[t2.Persons[1]] + 1
 	}
-	cache[p] = cache[p] + p.Wins
 	return new(pb.Empty), nil
 }
 
@@ -30,7 +34,7 @@ func (*service) GetScore(ctx context.Context, req *pb.Person) (*pb.Person, error
 		Lastname:  "Choco",
 		Wins:      3,
 	}
-	result, ok := cache[*req]
+	result, ok := cache[req]
 	if !ok {
 		return &p, nil
 	}
@@ -38,7 +42,7 @@ func (*service) GetScore(ctx context.Context, req *pb.Person) (*pb.Person, error
 	return req, nil
 }
 
-var cache = make(map[pb.Person]int32)
+var cache = make(map[*pb.Person]int32)
 
 func runServer(port string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
