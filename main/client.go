@@ -1,4 +1,4 @@
-package score_keeper
+package main
 
 import (
 	"context"
