@@ -27,24 +27,6 @@ func runClient(servers []string) {
 
 		// block until connected
 		grpc.WithBlock(),
-
-		// backoff policy
-		// grpc.WithBackoffConfig(grpc.BackoffConfig{
-		// 	MaxDelay: time.Second,
-		// }),
-		// grpc.WithBackoffMaxDelay(time.Second),
-
-		// disable healthcheck, seems not working
-		// grpc.WithDisableHealthCheck(),
-
-		// maybe works under high corrency
-		// grpc.WithDisableRetry(),
-
-		// care of this config, read the comments carefully
-		// grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		// 	Time:    time.Second,
-		// 	Timeout: time.Second * 5,
-		// }),
 	)
 	if err != nil {
 		log.Panicf("dial err: %s", err)
@@ -54,26 +36,51 @@ func runClient(servers []string) {
 
 	//client := pb.NewEchoClient(conn)
 	client := pb.NewScoreKeeperServiceClient(conn)
+
+	err = postScores(client)
+
+	p1 := pb.Person{
+		Firstname: "Dom",
+		Lastname:  "Kop",
+	}
+	getScore(client, p1)
+
+	p2 := pb.Person{
+		Firstname: "Kaas",
+		Lastname:  "Kop",
+	}
+	getScore(client, p2)
+}
+
+func getScore(client pb.ScoreKeeperServiceClient, p pb.Person) {
+	person, err := client.GetScore(context.Background(), &p)
+	if err != nil {
+		log.Printf("error: %s", err)
+	}
+	log.Printf("Getting score for player [%s]", p.Firstname)
+	log.Printf("Received score: [%d], for player: [%s]", person.GetWins(), person)
+	time.Sleep(time.Second)
+}
+
+func postScores(client pb.ScoreKeeperServiceClient) error {
 	log.Printf("---")
-	_, err = client.StoreScore(context.Background(), getMatchResult())
+	log.Printf("Storing score")
+	_, err := client.StoreScore(context.Background(), getMatchResult(5, 10))
+	log.Printf("Storing score")
+	_, err = client.StoreScore(context.Background(), getMatchResult(10, 7))
+	log.Printf("Storing score")
+	_, err = client.StoreScore(context.Background(), getMatchResult(10, 6))
+	log.Printf("Storing score")
+	_, err = client.StoreScore(context.Background(), getMatchResult(10, 4))
 	if err != nil {
 		log.Printf("error: %s", err)
 		time.Sleep(time.Second * 5)
 	}
 	time.Sleep(time.Second)
-	p1 := pb.Person{
-		Firstname: "Dom",
-		Lastname:  "Kop",
-	}
-	person, err := client.GetScore(context.Background(), &p1)
-	if err != nil {
-		log.Printf("error: %s", err)
-		time.Sleep(time.Second * 5)
-	}
-	log.Printf("Received score: %s, for player: %s", person.GetWins(), person)
+	return err
 }
 
-func getMatchResult() *pb.MatchResult {
+func getMatchResult(rt1 int32, rt2 int32) *pb.MatchResult {
 	p1 := pb.Person{
 		Firstname: "Kaas",
 		Lastname:  "Kop",
@@ -92,11 +99,11 @@ func getMatchResult() *pb.MatchResult {
 	}
 	t1 := pb.MatchResult_Team{
 		Persons: []*pb.Person{&p1, &p2},
-		Score:   5,
+		Score:   rt1,
 	}
 	t2 := pb.MatchResult_Team{
 		Persons: []*pb.Person{&p3, &p4},
-		Score:   10,
+		Score:   rt2,
 	}
 	r := pb.MatchResult{
 		Teams: []*pb.MatchResult_Team{&t1, &t2},
